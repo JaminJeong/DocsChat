@@ -243,6 +243,31 @@ docs의 권장 구조를 기반으로 모듈화된 구조 설계:
 
 ---
 
+## 7-1. 빌드 & 배포 과정에서 발견된 이슈 및 수정
+
+### 이슈 1: ChromaDB 헬스체크 API 경로 변경 (v1 → v2)
+- **증상**: docker-compose.yml의 헬스체크 `GET /api/v1/heartbeat` 실패 → chromadb `unhealthy`
+- **원인**: ChromaDB 1.0.0부터 API 경로가 `/api/v1/` → `/api/v2/`로 변경
+- **해결**: 헬스체크를 bash `/dev/tcp` 방식으로 변경 (curl/python3 미설치 컨테이너 대응)
+  ```yaml
+  test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/8000"]
+  ```
+
+### 이슈 2: Streamlit 포트 충돌 (8501)
+- **증상**: `Bind for 0.0.0.0:8501 failed: port is already allocated`
+- **원인**: 동일 호스트의 다른 Streamlit 서비스가 8501 점유
+- **해결**: 호스트 포트를 8502로 변경 (컨테이너 내부는 8501 유지)
+  ```yaml
+  ports:
+    - "8502:8501"   # 호스트:컨테이너
+  ```
+
+### 이슈 3: TRANSFORMERS_CACHE 환경변수 deprecated 경고
+- **증상**: `FutureWarning: Using TRANSFORMERS_CACHE is deprecated, use HF_HOME instead`
+- **해결**: docker-compose.yml에서 `TRANSFORMERS_CACHE` 제거, `HF_HOME`만 사용
+
+---
+
 ## 8. 주요 설계 결정
 
 ### ChromaDB HTTP 모드 선택

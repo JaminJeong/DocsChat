@@ -79,8 +79,10 @@ docker compose logs -f app
 ### 4. 브라우저 접속
 
 ```
-http://localhost:8501
+http://localhost:8502
 ```
+
+> **포트 변경 필요 시**: 8502가 이미 사용 중이라면 `docker-compose.yml`의 `"8502:8501"`을 원하는 포트로 변경하세요.
 
 ---
 
@@ -169,7 +171,7 @@ DocsChat/
 | 서비스 | 이미지 | 포트 | 설명 |
 |--------|--------|------|------|
 | `chromadb` | chromadb/chroma:latest | 8000 | Vector DB |
-| `app` | (로컬 빌드) | 8501 | Streamlit UI |
+| `app` | (로컬 빌드) | **8502**→8501 | Streamlit UI |
 | `ollama` | ollama/ollama:latest | 11434 | 로컬 LLM (선택) |
 
 ### 볼륨

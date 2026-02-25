@@ -7,17 +7,17 @@ services:
     volumes:
       - chroma_data:/chroma/chroma
     ports:
-      - "8000:8000"
+      - "20012:8000"
     environment:
       - ALLOW_RESET=TRUE
       - ANONYMIZED_TELEMETRY=FALSE
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
-      interval: 15s
-      timeout: 10s
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/8000"]
+      interval: 10s
+      timeout: 5s
       retries: 5
-      start_period: 20s
+      start_period: 15s
     networks:
       - docschat-network
 
@@ -28,7 +28,7 @@ services:
       dockerfile: Dockerfile
     container_name: docschat-app
     ports:
-      - "8501:8501"
+      - "20011:8501"
     environment:
       # ChromaDB 연결 (Docker 내부 서비스명)
       - CHROMA_HOST=chromadb
@@ -44,9 +44,8 @@ services:
       # 임베딩 기본값
       - EMBEDDING_PROVIDER=${EMBEDDING_PROVIDER:-huggingface}
       - EMBEDDING_MODEL=${EMBEDDING_MODEL:-sentence-transformers/all-MiniLM-L6-v2}
-      # HuggingFace 캐시 경로
+      # HuggingFace 캐시 경로 (HF_HOME으로 통합, v5부터 TRANSFORMERS_CACHE deprecated)
       - HF_HOME=/app/.cache/huggingface
-      - TRANSFORMERS_CACHE=/app/.cache/huggingface
       - SENTENCE_TRANSFORMERS_HOME=/app/.cache/huggingface/sentence_transformers
       # Ollama 연결 (ollama 프로파일 사용 시)
       - OLLAMA_HOST=ollama
