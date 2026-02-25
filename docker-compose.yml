@@ -1,0 +1,99 @@
+services:
+
+  # ── ChromaDB 벡터 데이터베이스 ──────────────────────────────
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: docschat-chromadb
+    volumes:
+      - chroma_data:/chroma/chroma
+    ports:
+      - "8000:8000"
+    environment:
+      - ALLOW_RESET=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks:
+      - docschat-network
+
+  # ── Streamlit 앱 ────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: docschat-app
+    ports:
+      - "8501:8501"
+    environment:
+      # ChromaDB 연결 (Docker 내부 서비스명)
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      - CHROMA_COLLECTION=${CHROMA_COLLECTION:-docschat}
+      # LLM 기본값 (UI에서 변경 가능)
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o-mini}
+      # API Keys (선택적 - UI에서 직접 입력 가능)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      # 임베딩 기본값
+      - EMBEDDING_PROVIDER=${EMBEDDING_PROVIDER:-huggingface}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-sentence-transformers/all-MiniLM-L6-v2}
+      # HuggingFace 캐시 경로
+      - HF_HOME=/app/.cache/huggingface
+      - TRANSFORMERS_CACHE=/app/.cache/huggingface
+      - SENTENCE_TRANSFORMERS_HOME=/app/.cache/huggingface/sentence_transformers
+      # Ollama 연결 (ollama 프로파일 사용 시)
+      - OLLAMA_HOST=ollama
+      - OLLAMA_PORT=11434
+    volumes:
+      # HuggingFace 모델 캐시 (재시작해도 재다운로드 불필요)
+      - huggingface_cache:/app/.cache/huggingface
+    depends_on:
+      chromadb:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - docschat-network
+
+  # ── Ollama 로컬 LLM (선택적) ─────────────────────────────────
+  # 사용법: docker compose --profile ollama up -d
+  # 실행 후 모델 다운로드: docker exec -it docschat-ollama ollama pull llama3.2
+  ollama:
+    image: ollama/ollama:latest
+    container_name: docschat-ollama
+    volumes:
+      - ollama_models:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+    networks:
+      - docschat-network
+    profiles:
+      - ollama
+    # GPU 사용 시 아래 주석 해제 (NVIDIA GPU 필요):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+
+# ── 네트워크 ──────────────────────────────────────────────────
+networks:
+  docschat-network:
+    driver: bridge
+
+
+# ── 볼륨 ──────────────────────────────────────────────────────
+volumes:
+  chroma_data:          # ChromaDB 영구 데이터
+  huggingface_cache:    # HuggingFace 임베딩 모델 캐시
+  ollama_models:        # Ollama LLM 모델 저장소
