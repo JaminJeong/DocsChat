@@ -255,6 +255,20 @@ curl http://localhost:8000/api/v1/heartbeat
 
 ---
 
+
+## 라이선스
+
+이 프로젝트는 MIT 라이선스를 따릅니다.
+
+---
+
+## 실행 화면 
+
+![alt text](images/serviceImg.png)
+
+---
+
+
 ## 관련 문서
 
 - [구현 계획 및 과정](docs/plan.md)
