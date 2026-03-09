@@ -1,163 +1,163 @@
 # 📚 DocsChat
 
-> 문서 기반 RAG(Retrieval-Augmented Generation) 채팅 서비스
+> Document-based RAG (Retrieval-Augmented Generation) Chat Service
 > LangChain + ChromaDB + Docker Compose + Streamlit
 
 ---
 
-## 개요
+## Overview
 
-DocsChat은 PDF, TXT, 웹 페이지 등 다양한 문서를 업로드하고, 해당 문서의 내용을 기반으로 AI와 대화할 수 있는 RAG 채팅 서비스입니다.
+DocsChat is a RAG chat service that lets you upload various documents such as PDFs, TXT files, and web pages, and have AI-powered conversations based on the content of those documents.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  사용자 질문                                                  │
+│  User Question                                               │
 │      │                                                       │
 │      ▼                                                       │
-│  [ChromaDB 검색] ──► [관련 문서 청크]                         │
+│  [ChromaDB Search] ──► [Relevant Document Chunks]            │
 │      │                      │                               │
 │      └──────────────────────►                               │
 │                             ▼                               │
-│                        [RAG 프롬프트]                         │
+│                        [RAG Prompt]                          │
 │                             │                               │
 │                             ▼                               │
 │                    [LLM (GPT/Claude/Gemini/Ollama)]          │
 │                             │                               │
 │                             ▼                               │
-│                        [스트리밍 답변]                        │
+│                        [Streaming Answer]                    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 기능
+## Features
 
-- **다양한 문서 지원**: PDF, TXT, 웹 URL
-- **LLM 선택**: OpenAI GPT / Anthropic Claude / Google Gemini / Ollama(로컬)
-- **임베딩 선택**: HuggingFace(무료/로컬) / OpenAI(유료)
-- **벡터 DB**: ChromaDB (Docker HTTP 서버 모드, 데이터 영구 보존)
-- **스트리밍 응답**: 실시간 답변 생성
-- **소스 표시**: 답변 근거가 된 문서 청크 표시
-- **Docker Compose**: 원클릭 배포
+- **Multiple Document Formats**: PDF, TXT, Web URL
+- **LLM Selection**: OpenAI GPT / Anthropic Claude / Google Gemini / Ollama (local)
+- **Embedding Selection**: HuggingFace (free/local) / OpenAI (paid)
+- **Vector DB**: ChromaDB (Docker HTTP server mode, persistent data)
+- **Streaming Responses**: Real-time answer generation
+- **Source Display**: Shows document chunks that the answer is based on
+- **Docker Compose**: One-click deployment
 
 ---
 
-## 빠른 시작
+## Quick Start
 
-### 1. 저장소 복제
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/DocsChat.git
 cd DocsChat
 ```
 
-### 2. 환경변수 설정
+### 2. Set Environment Variables
 
 ```bash
 cp .env.example .env
 ```
 
-`.env` 파일을 편집하여 API Key를 설정합니다:
+Edit the `.env` file to set your API Keys:
 
 ```env
-# 사용할 LLM 제공자의 API Key만 설정하면 됩니다
-OPENAI_API_KEY=sk-...        # OpenAI 사용 시
-ANTHROPIC_API_KEY=sk-ant-... # Anthropic 사용 시
-GOOGLE_API_KEY=AIza...       # Google 사용 시
+# Only set the API Key for the LLM provider you want to use
+OPENAI_API_KEY=sk-...        # For OpenAI
+ANTHROPIC_API_KEY=sk-ant-... # For Anthropic
+GOOGLE_API_KEY=AIza...       # For Google
 ```
 
-### 3. 서비스 실행
+### 3. Run the Service
 
 ```bash
-# 기본 실행 (ChromaDB + Streamlit 앱)
+# Basic run (ChromaDB + Streamlit app)
 docker compose up -d
 
-# 로그 확인
+# View logs
 docker compose logs -f app
 ```
 
-### 4. 브라우저 접속
+### 4. Open in Browser
 
 ```
 http://localhost:8502
 ```
 
-> **포트 변경 필요 시**: 8502가 이미 사용 중이라면 `docker-compose.yml`의 `"8502:8501"`을 원하는 포트로 변경하세요.
+> **If you need to change the port**: If 8502 is already in use, change `"8502:8501"` in `docker-compose.yml` to your preferred port.
 
 ---
 
-## 사용 방법
+## How to Use
 
-### 문서 인덱싱
+### Document Indexing
 
-1. 사이드바에서 **LLM 설정** (제공자, 모델, API Key)
-2. **파일 업로드** (PDF, TXT) 또는 **웹 URL** 입력
-3. **📥 인덱싱** 버튼 클릭
-4. 인덱싱 완료 메시지 확인
+1. Set **LLM settings** in sidebar (provider, model, API Key)
+2. **Upload files** (PDF, TXT) or enter a **web URL**
+3. Click the **📥 Index** button
+4. Confirm the indexing completion message
 
-### 채팅
+### Chat
 
-1. 채팅 탭의 입력창에 질문 입력
-2. AI가 관련 문서를 검색하여 스트리밍으로 답변
-3. 답변 하단의 **📎 참고 문서** 에서 근거 확인
+1. Enter your question in the chat input
+2. AI searches relevant documents and responds with streaming
+3. Check the reference in **📎 Source Documents** at the bottom of the answer
 
 ---
 
-## 지원 LLM
+## Supported LLMs
 
-| 제공자 | 모델 | API Key | 특징 |
+| Provider | Models | API Key | Features |
 |--------|------|---------|------|
-| **OpenAI** | gpt-4o-mini, gpt-4o | 필요 | 빠름, 저비용 |
-| **Anthropic** | claude-3-5-sonnet-20241022 | 필요 | 긴 컨텍스트 |
-| **Google** | gemini-1.5-flash, gemini-1.5-pro | 필요 | 무료 티어 존재 |
-| **Ollama** | llama3.2, mistral 등 | 불필요 | 완전 로컬 실행 |
+| **OpenAI** | gpt-4o-mini, gpt-4o | Required | Fast, low cost |
+| **Anthropic** | claude-3-5-sonnet-20241022 | Required | Long context |
+| **Google** | gemini-1.5-flash, gemini-1.5-pro | Required | Free tier available |
+| **Ollama** | llama3.2, mistral, etc. | Not required | Fully local execution |
 
 ---
 
-## Ollama (로컬 LLM) 사용
+## Ollama (Local LLM) Usage
 
 ```bash
-# Ollama 포함 실행
+# Run with Ollama
 docker compose --profile ollama up -d
 
-# 모델 다운로드 (예: llama3.2)
+# Download a model (e.g., llama3.2)
 docker exec -it docschat-ollama ollama pull llama3.2
 
-# 사용 가능한 모델 목록 확인
+# List available models
 docker exec -it docschat-ollama ollama list
 ```
 
 ---
 
-## 지원 임베딩
+## Supported Embeddings
 
-| 제공자 | 기본 모델 | 비용 | 특징 |
+| Provider | Default Model | Cost | Features |
 |--------|---------|------|------|
-| **HuggingFace** | all-MiniLM-L6-v2 | 무료 | 로컬 실행, 최초 다운로드 필요 |
-| **OpenAI** | text-embedding-3-small | 유료 | 고성능, API 호출 |
+| **HuggingFace** | all-MiniLM-L6-v2 | Free | Local execution, initial download required |
+| **OpenAI** | text-embedding-3-small | Paid | High performance, API call |
 
-> HuggingFace 임베딩 모델은 첫 실행 시 자동 다운로드되며, Docker 볼륨에 캐시됩니다.
+> HuggingFace embedding models are automatically downloaded on first run and cached in a Docker volume.
 
 ---
 
-## 아키텍처
+## Architecture
 
 ```
 DocsChat/
-├── app.py                     # Streamlit 메인 앱
+├── app.py                     # Streamlit main app
 ├── core/
-│   ├── document_loader.py     # TXT/PDF/Web 문서 로더
-│   ├── embeddings.py          # 임베딩 팩토리
-│   ├── llm_factory.py         # LLM 팩토리
-│   ├── vector_store.py        # ChromaDB 연결/관리
-│   └── rag_engine.py          # RAG 파이프라인 (LCEL)
+│   ├── document_loader.py     # TXT/PDF/Web document loader
+│   ├── embeddings.py          # Embedding factory
+│   ├── llm_factory.py         # LLM factory
+│   ├── vector_store.py        # ChromaDB connection/management
+│   └── rag_engine.py          # RAG pipeline (LCEL)
 ├── config/
-│   └── settings.py            # 환경변수 기반 설정
+│   └── settings.py            # Environment variable-based settings
 ├── docs/
-│   ├── plan.md                # 구현 계획 및 과정
-│   ├── vector_db.md           # Vector DB 비교
-│   ├── demo.md                # 데모 가이드
-│   └── service.md             # 서비스 구축 가이드
+│   ├── plan.md                # Implementation plan and process
+│   ├── vector_db.md           # Vector DB comparison
+│   ├── demo.md                # Demo guide
+│   └── service.md             # Service setup guide
 ├── docker-compose.yml
 ├── Dockerfile
 ├── requirements.txt
@@ -166,123 +166,123 @@ DocsChat/
 
 ---
 
-## Docker Compose 서비스
+## Docker Compose Services
 
-| 서비스 | 이미지 | 포트 | 설명 |
+| Service | Image | Port | Description |
 |--------|--------|------|------|
 | `chromadb` | chromadb/chroma:latest | 8000 | Vector DB |
-| `app` | (로컬 빌드) | **8502**→8501 | Streamlit UI |
-| `ollama` | ollama/ollama:latest | 11434 | 로컬 LLM (선택) |
+| `app` | (local build) | **8502**→8501 | Streamlit UI |
+| `ollama` | ollama/ollama:latest | 11434 | Local LLM (optional) |
 
-### 볼륨
+### Volumes
 
-| 볼륨 | 용도 |
+| Volume | Purpose |
 |------|------|
-| `chroma_data` | ChromaDB 문서 데이터 (영구 보존) |
-| `huggingface_cache` | HuggingFace 임베딩 모델 캐시 |
-| `ollama_models` | Ollama LLM 모델 저장소 |
+| `chroma_data` | ChromaDB document data (persistent) |
+| `huggingface_cache` | HuggingFace embedding model cache |
+| `ollama_models` | Ollama LLM model storage |
 
 ---
 
-## 환경변수
+## Environment Variables
 
-| 변수 | 기본값 | 설명 |
+| Variable | Default | Description |
 |------|--------|------|
-| `LLM_PROVIDER` | `openai` | LLM 제공자 |
-| `LLM_MODEL` | (제공자별 기본) | LLM 모델명 |
+| `LLM_PROVIDER` | `openai` | LLM provider |
+| `LLM_MODEL` | (provider default) | LLM model name |
 | `OPENAI_API_KEY` | - | OpenAI API Key |
 | `ANTHROPIC_API_KEY` | - | Anthropic API Key |
 | `GOOGLE_API_KEY` | - | Google API Key |
-| `EMBEDDING_PROVIDER` | `huggingface` | 임베딩 제공자 |
-| `EMBEDDING_MODEL` | `all-MiniLM-L6-v2` | 임베딩 모델 |
-| `CHROMA_HOST` | `chromadb` | ChromaDB 호스트 |
-| `CHROMA_PORT` | `8000` | ChromaDB 포트 |
-| `CHROMA_COLLECTION` | `docschat` | 컬렉션 이름 |
-| `OLLAMA_HOST` | `ollama` | Ollama 호스트 |
-| `OLLAMA_PORT` | `11434` | Ollama 포트 |
+| `EMBEDDING_PROVIDER` | `huggingface` | Embedding provider |
+| `EMBEDDING_MODEL` | `all-MiniLM-L6-v2` | Embedding model |
+| `CHROMA_HOST` | `chromadb` | ChromaDB host |
+| `CHROMA_PORT` | `8000` | ChromaDB port |
+| `CHROMA_COLLECTION` | `docschat` | Collection name |
+| `OLLAMA_HOST` | `ollama` | Ollama host |
+| `OLLAMA_PORT` | `11434` | Ollama port |
 
 ---
 
-## 로컬 개발 (Docker 없이)
+## Local Development (Without Docker)
 
 ```bash
-# ChromaDB는 Docker로 실행
+# Run ChromaDB with Docker
 docker run -d -p 8000:8000 chromadb/chroma:latest
 
-# Python 가상환경 생성
+# Create Python virtual environment
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-# PyTorch CPU 설치 (HuggingFace 임베딩용)
+# Install PyTorch CPU (for HuggingFace embeddings)
 pip install torch --index-url https://download.pytorch.org/whl/cpu
 
-# 의존성 설치
+# Install dependencies
 pip install -r requirements.txt
 
-# 환경변수 설정 (CHROMA_HOST를 localhost로)
+# Set environment variables (CHROMA_HOST to localhost)
 export CHROMA_HOST=localhost
 
-# 실행
+# Run
 streamlit run app.py
 ```
 
 ---
 
-## 유용한 명령어
+## Useful Commands
 
 ```bash
-# 서비스 상태 확인
+# Check service status
 docker compose ps
 
-# 앱 로그 확인
+# View app logs
 docker compose logs -f app
 
-# ChromaDB 로그 확인
+# View ChromaDB logs
 docker compose logs -f chromadb
 
-# 서비스 중지
+# Stop services
 docker compose down
 
-# 데이터 포함 전체 삭제 (주의: 인덱싱된 문서 삭제됨)
+# Full removal including data (caution: indexed documents will be deleted)
 docker compose down -v
 
-# 이미지 재빌드 (코드 변경 후)
+# Rebuild image (after code changes)
 docker compose up -d --build app
 
-# ChromaDB API 직접 접근
+# Direct ChromaDB API access
 curl http://localhost:8000/api/v1/heartbeat
 ```
 
 ---
 
 
-## 라이선스
+## License
 
-이 프로젝트는 MIT 라이선스를 따릅니다.
+This project is licensed under the MIT License.
 
 ---
 
-## 실행 화면 
+## Screenshots
 
 ![alt text](images/serviceImg.png)
 
 ---
 
 
-## 관련 문서
+## Related Documentation
 
-- [구현 계획 및 과정](docs/plan.md)
-- [Vector DB 비교 분석](docs/vector_db.md)
-- [Vector DB Docker 구성](docs/vector_db_docker.md)
-- [데모 UI 가이드](docs/demo.md)
-- [서비스 구축 가이드](docs/service.md)
+- [Implementation Plan and Process](docs/plan.md)
+- [Vector DB Comparative Analysis](docs/vector_db.md)
+- [Vector DB Docker Configuration](docs/vector_db_docker.md)
+- [Demo UI Guide](docs/demo.md)
+- [Service Setup Guide](docs/service.md)
 
 ---
 
-## 기술 스택
+## Tech Stack
 
-- [LangChain](https://python.langchain.com) - RAG 프레임워크
-- [ChromaDB](https://docs.trychroma.com) - 벡터 데이터베이스
-- [Streamlit](https://streamlit.io) - 웹 UI
-- [sentence-transformers](https://sbert.net) - HuggingFace 임베딩
-- [Docker Compose](https://docs.docker.com/compose) - 컨테이너 오케스트레이션
+- [LangChain](https://python.langchain.com) - RAG framework
+- [ChromaDB](https://docs.trychroma.com) - Vector database
+- [Streamlit](https://streamlit.io) - Web UI
+- [sentence-transformers](https://sbert.net) - HuggingFace embeddings
+- [Docker Compose](https://docs.docker.com/compose) - Container orchestration
